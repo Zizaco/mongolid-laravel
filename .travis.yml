@@ -1,23 +1,24 @@
 language: php
 
 php:
-  - 7.1
   - 7.2
+  - 7.3
 
 cache:
   directories:
     - $HOME/.composer/cache
 
+services: mongodb
+
 before_install:
-  - echo "extension = mongodb.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - pecl install mongodb > /dev/null
 
 before_script:
-  - travis_retry composer install ${COMPOSER_FLAGS} --ignore-platform-reqs --no-interaction --prefer-dist
-  - mkdir -p build/logs
+  - composer install --no-interaction
 
 script:
   - vendor/bin/phpcs
-  - vendor/bin/phpunit --coverage-text --coverage-clover build/logs/clover.xml
+  - vendor/bin/phpunit -c phpunit.xml.dist
 
 after_success:
-  - travis_retry php vendor/bin/coveralls
+  - if [[ $(phpenv version-name) = "7.3" ]]; then php vendor/bin/php-coveralls -v; fi
